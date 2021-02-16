@@ -1,4 +1,4 @@
-```
+```php
     public function migrateAll(){
         $data = DB::table('hr_worker_recruitment')
             ->where('worker_unit_id', 8)
