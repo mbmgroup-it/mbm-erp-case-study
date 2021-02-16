@@ -1,4 +1,4 @@
-```
+```php
     public function processLeftSalary()
     {
         $data = array(
