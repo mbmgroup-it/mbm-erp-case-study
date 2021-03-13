@@ -1,11 +1,44 @@
-```
+
+### Insert Advance Info [Bulk]
+```php
     public function advBn()
     {
         $data = array(
-                 '20K1469E' => array('SALARY' => '9500', 'J_SAL' => '9500', 'MARRIED' => 'M', 'FNAME' => 'MD.Demo', 'HNAME' => '', 'PAD1' => 'Demo', 'PAD2' => '', 'PPOST' => 'HOLDIBARI-5470', 'PTHANA' => 'PIRGANJ', 'PDIST' => '32', 'CAD1' => 'SALNA', 'CAD2' => '', 'CPOST' => 'SALNA BAZAR', 'CTHANA' => '154', 'CDIST' => '3', 'B_NAME' => 'মোঃ লেবু মন্ডল', 'MOTHER' => 'মোছাঃ রোকেয়া বেগম', 'BFATHER' => 'মোঃ আব্দুল মান্নান মন্ডল', 'BGRAM' => 'বড় বদনাপাড়া', 'BPOST' => 'হলদীবাড়ী', 'MNAME' => 'MST.ROKEYA BEGUM', 'HOUSE_NO' => 'সালনা', 'ROAD_NO' => '', 'PO' => 'সালনা বাজার', 'CHILDREN' => '', 'CLASS' => 'EIGHT', 'RELEG' => 'I')
+                 '20K1469E' => array(
+                    'SALARY' => '9500', 
+                    'J_SAL' => '9500', 
+                    'MARRIED' => 'M', 
+                    'FNAME' => 'MD.Demo', 
+                    'HNAME' => '', 
+                    'PAD1' => 'Demo', 
+                    'PAD2' => '', 
+                    'PPOST' => 'HOLDIBARI-5470', 
+                    'PTHANA' => 'PIRGANJ', 
+                    'PDIST' => '32', 
+                    'CAD1' => 'SALNA', 
+                    'CAD2' => '', 
+                    'CPOST' => 'SALNA BAZAR', 
+                    'CTHANA' => '154', 
+                    'CDIST' => '3', 
+                    'B_NAME' => 'মোঃ গবু চন্দ্র', 
+                    'MOTHER' => 'বালা রানী', 
+                    'BFATHER' => 'হাবু চন্দ্র', 
+                    'BGRAM' => 'বড় বদনাপাড়া', 
+                    'BPOST' => 'হলদীবাড়ী', 
+                    'MNAME' => 'Mst. Demo', 
+                    'HOUSE_NO' => 'সালনা', 
+                    'ROAD_NO' => '', 
+                    'PO' => 'সালনা বাজার', 
+                    'CHILDREN' => '', 
+                    'CLASS' => 'EIGHT', 
+                    'RELEG' => 'I'
+                 ),
+                 ............
+                 ............
+                 ............
             );
 
-
+        
         $as = DB::table('hr_as_basic_info')
             ->where('as_unit_id', 3)
             ->pluck('associate_id','as_oracle_code');
