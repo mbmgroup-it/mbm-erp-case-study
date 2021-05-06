@@ -1,3 +1,4 @@
+```sql
 select b.associate_id as 'Associate ID', b.as_name as 'Name', b.as_oracle_code as 'Oracle ID',
 d.hr_designation_name as 'Designation',
 dp.hr_department_name as 'Department',
@@ -16,3 +17,4 @@ left join suadmin_erp.hr_subsection as sb on b.as_subsection_id = sb.hr_subsec_i
 left join suadmin_erp.hr_floor as f on b.as_floor_id = f.hr_floor_id
 left join suadmin_erp.hr_line as l on b.as_line_id = l.hr_line_id
 where a.in_date >= '2021-04-15' and a.in_date <= '2021-04-30' and a.created_at < '2021-05-02 16:00:00' and b.as_status = 1
+```
