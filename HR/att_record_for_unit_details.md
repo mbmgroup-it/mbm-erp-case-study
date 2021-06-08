@@ -8,6 +8,7 @@ s.hr_section_name as 'Section',
 sb.hr_subsec_name as 'Subsction', 
 f.hr_floor_name as 'Floor',l.hr_line_name AS 'Line',
 b.as_doj AS 'DOJ', 
+et.hr_emp_type_name AS 'Type',
 CASE when as_ot = 0 THEN 'Non OT' when as_ot = 1 THEN 'OT' END AS OT,
 CASE when as_status = 1 THEN 'Active' when as_status = 2 THEN 'Resign' when as_status = 5 THEN 'Left' when as_status = 6 THEN 'Maternity' END AS Status,
 sft.hr_shift_name as 'Shift Name',
@@ -22,9 +23,10 @@ left join suadmin_erp.hr_unit as u on b.as_unit_id = u.hr_unit_id
 left join suadmin_erp.hr_department as dp on b.as_department_id = dp.hr_department_id
 left join suadmin_erp.hr_designation as d on b.as_designation_id = d.hr_designation_id
 left join suadmin_erp.hr_section as s on b.as_section_id = s.hr_section_id
+left join suadmin_erp.hr_emp_type et  on et.emp_type_id  = b.as_emp_type_id 
 left join suadmin_erp.hr_subsection as sb on b.as_subsection_id = sb.hr_subsec_id
 left join suadmin_erp.hr_floor as f on b.as_floor_id = f.hr_floor_id
 left join suadmin_erp.hr_line as l on b.as_line_id = l.hr_line_id
 left join suadmin_erp.hr_shift as sft on a.hr_shift_code = sft.hr_shift_code
-where a.in_date >= '2021-05-01' and a.in_date <= '2021-05-17'
+where a.in_date >= '2021-05-01' and a.in_date <= '2021-05-31' and sft.hr_shift_unit_id in (1,4,5)
 ```
