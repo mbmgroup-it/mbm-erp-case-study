@@ -1,0 +1,27 @@
+```sql
+select b.associate_id as 'Associate ID', b.as_name as 'Name', b.as_oracle_code as 'Oracle ID',
+u.hr_unit_short_name as 'Unit',
+loc.hr_location_name as 'Location',
+d.hr_designation_name as 'Designation',
+ben.ben_current_salary as 'Salary', 
+dp.hr_department_name as 'Department',
+s.hr_section_name as 'Section',
+sb.hr_subsec_name as 'Subsction', 
+b.as_doj AS 'DOJ', 
+b.as_dob AS 'DOB',
+YEAR(CURDATE()) - YEAR(b.as_dob) AS 'Age',
+et.hr_emp_type_name AS 'Type',
+CASE when as_ot = 0 THEN 'Non OT' when as_ot = 1 THEN 'OT' END AS OT,
+CASE when as_status = 1 THEN 'Active' when as_status = 6 THEN 'Maternity' END AS Status
+from suadmin_erp.hr_as_basic_info as b
+left join suadmin_erp.hr_location as loc on b.as_location = loc.hr_location_id
+left join suadmin_erp.hr_unit as u on b.as_unit_id = u.hr_unit_id
+left join suadmin_erp.hr_department as dp on b.as_department_id = dp.hr_department_id
+left join suadmin_erp.hr_designation as d on b.as_designation_id = d.hr_designation_id
+left join suadmin_erp.hr_section as s on b.as_section_id = s.hr_section_id
+left join suadmin_erp.hr_emp_type et  on et.emp_type_id  = b.as_emp_type_id 
+left join suadmin_erp.hr_subsection as sb on b.as_subsection_id = sb.hr_subsec_id
+left join suadmin_erp.hr_benefits as ben on b.associate_id = ben.ben_as_id
+where b.as_dob <= '1986-07-01'  and b.as_location = 12 and b.as_status in (1,6)
+```
+
