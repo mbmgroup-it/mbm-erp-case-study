@@ -1,0 +1,34 @@
+SELECT 
+b.associate_id, 
+b.as_oracle_code as PID, 
+b.as_name as Name, 
+hs.hr_section_name as AsSECTION,
+hg.hr_designation_name as DESIGNATION,
+CASE when b.as_emp_type_id = 1 THEN 'Management' when b.as_emp_type_id = 2 THEN 'Staff' when b.as_emp_type_id = 3 THEN 'Worker' END AS Category,
+b.as_gender as GENDER,
+b.as_doj as DOJ,
+CASE when b.as_status = 2 OR b.as_status = 5 THEN b.as_status_date END AS left_date,
+CASE when b.as_ot = 0 THEN 'Non OT' when b.as_ot = 1 THEN 'OT' END AS EMP_TYPE,
+x.gross as WAGES,
+x.basic as Basic,
+x.absent_deduct as 'Ab Ded',
+x.salary_payable as 'Pay Wage',
+x.ot_hour as OT_HOUR,
+x.ot_hour * x.ot_rate as COMPENSATION,
+x.attendance_bonus as ATTN_BONUS,
+x.salary_payable as 'TOT Pay without compensation',
+x.salary_payable as 'TOT Pay with compensation',
+x.present as PRESENT,
+x.absent as ABSENT,
+x.salary_payable as TOTAL_BAYABLE,
+x.holiday as HOLIDAYS,
+x.present + x.holiday + x.`leave` as WORDING_DAYS,
+hg.hr_designation_grade as GRADE,
+x.`leave` as TOATL_LEAVE,
+b.as_status as as_status
+FROM suadmin_erp.hr_buyer_salary_ceil4 x 
+join hr_as_basic_info b on x.as_id = b.as_id
+left join suadmin_erp.hr_designation hg  on hg.hr_designation_id  = b.as_designation_id 
+left join suadmin_erp.hr_department hd on hd.hr_department_id = b.as_department_id 
+left join suadmin_erp.hr_section hs on hs.hr_section_id = b.as_section_id 
+WHERE `month` = '07' and `year` = 2021
