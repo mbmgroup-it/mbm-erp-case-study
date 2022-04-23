@@ -1,0 +1,277 @@
+CREATE DEFINER=`suadmin_erpdb`@`182.160.113.114` PROCEDURE `suadmin_erp`.`hr_partial_salary_prc`(
+as_id1 int,
+salary_from_date date,
+salary_to_date date,
+ot_give_status longtext, 
+ot_from_date date,
+ot_to_date date,
+unit1 int
+)
+begin
+	
+	
+IF unit1 in (1,4,5) THEN
+select a.as_id,a.associate_id , a.as_ot ,a.as_doj ,a.shift_roaster_status ,a.as_status,bn.ben_current_salary ,bn.ben_basic ,bn.ben_house_rent 
+,bn.ben_medical ,bn.ben_transport ,bn.ben_food ,a.as_unit_id ,a.as_designation_id ,a.as_location ,a.as_section_id 
+,bn.ben_cash_amount ,bn.ben_bank_amount ,bn.bank_name
+-- ...................................................................
+ ,( select count(bss.as_id)  from hr_attendance_mbm bss  where bss.as_id =a.as_id 
+ and bss.in_date between salary_from_date and salary_to_date) present
+ -- ...................................................................
+ ,( select count(bss.as_id)  from hr_attendance_mbm bss  where bss.as_id =a.as_id 
+ and bss.in_date between salary_from_date and salary_to_date and bss.late_status=1) late
+  -- ...................................................................
+ ,IFNULL( ( select sum(bss.ot_hour)  from hr_attendance_mbm bss  where bss.as_id =a.as_id 
+ and bss.in_date between ot_from_date and ot_to_date ),0) ot_hour 
+-- ...................................................................
+,( select count(ha.associate_id)  from hr_absent ha where ha.associate_id=a.associate_id 
+and ha.`date` between salary_from_date and salary_to_date  ) absent
+-- ...................................................................
+,(select count(sp1.id)  
+from hr_leave sp1, hr_as_basic_info cvc 
+where sp1.leave_ass_id =cvc.associate_id 
+and sp1.leave_from between salary_from_date and salary_to_date 
+and sp1.leave_ass_id=a.associate_id  
+and sp1.leave_type <> 'Maternity') leaves
+-- -- ...................................................................
+,(select count(hr.as_id)  
+from holiday_roaster hr
+where lower(hr.remarks) ='holiday' and hr.as_id=a.associate_id and hr.`date`>a.as_doj
+and hr.`date` between salary_from_date and salary_to_date ) holiday_roaster
+-- -- ...................................................................
+,(select count(hyhp.hr_yhp_id) 
+from hr_yearly_holiday_planner hyhp  
+where hyhp.hr_yhp_open_status <>1
+and a.shift_roaster_status = 0
+and hyhp.hr_yhp_dates_of_holidays >a.as_doj 
+and hyhp.hr_yhp_unit=a.as_unit_id 
+and hyhp.hr_yhp_dates_of_holidays between salary_from_date and salary_to_date
+and hyhp.hr_yhp_dates_of_holidays not in (select hr.`date`  
+from holiday_roaster hr
+ where lower(hr.remarks)  in ('holiday','ot','general')
+and  hr.as_id=a.associate_id and hr.`date`>a.as_doj and hr.`date` between salary_from_date and salary_to_date) 
+and hyhp.hr_yhp_dates_of_holidays not in (select bss.in_date  from hr_attendance_mbm bss  where bss.as_id =a.as_id 
+and bss.in_date between salary_from_date and salary_to_date)  
+and hyhp.hr_yhp_dates_of_holidays not in (select sp1.leave_from  
+from hr_leave sp1,hr_as_basic_info cvc 
+where sp1.leave_ass_id =cvc.associate_id
+and sp1.leave_from between salary_from_date and salary_to_date 
+and sp1.leave_ass_id=a.associate_id and sp1.leave_type <> 'Maternity')
+and hyhp.hr_yhp_dates_of_holidays not in (select m.in_date  
+from hr_attendance_mbm m 
+where m.as_id =a.as_id
+and m.in_date between salary_from_date and salary_to_date) ) general_holiday
+-- -----------------------------------------------------------------
+,(select count(hr.as_id)    from holiday_roaster hr where lower(hr.remarks)  in ('ot')
+and  hr.as_id=a.associate_id and hr.`date`>a.as_doj and hr.`date` between salary_from_date and salary_to_date
+and hr.`date` not in (select bss.in_date  from hr_attendance_mbm bss  where bss.as_id =a.as_id 
+and bss.in_date between salary_from_date and salary_to_date)
+ )   emergency_holiday_ot
+-- -----------------------------------------------------------------
+from hr_as_basic_info a ,hr_benefits bn 
+where  a.associate_id=bn.ben_as_id
+and a.as_id=as_id1;
+end if;
+
+
+
+
+IF unit1 in (2) THEN
+select a.as_id,a.associate_id , a.as_ot ,a.as_doj ,a.shift_roaster_status ,a.as_status,bn.ben_current_salary ,bn.ben_basic ,bn.ben_house_rent 
+,bn.ben_medical ,bn.ben_transport ,bn.ben_food ,a.as_unit_id ,a.as_designation_id ,a.as_location ,a.as_section_id 
+,bn.ben_cash_amount ,bn.ben_bank_amount ,bn.bank_name
+-- ...................................................................
+ ,( select count(bss.as_id)  from hr_attendance_ceil bss  where bss.as_id =a.as_id 
+ and bss.in_date between salary_from_date and salary_to_date) present
+ -- ...................................................................
+ ,( select count(bss.as_id)  from hr_attendance_ceil bss  where bss.as_id =a.as_id 
+ and bss.in_date between salary_from_date and salary_to_date and bss.late_status=1) late
+  -- ...................................................................
+ ,IFNULL( ( select sum(bss.ot_hour)  from hr_attendance_ceil bss  where bss.as_id =a.as_id 
+ and bss.in_date between ot_from_date and ot_to_date ),0) ot_hour 
+-- ...................................................................
+,( select count(ha.associate_id)  from hr_absent ha where ha.associate_id=a.associate_id 
+and ha.`date` between salary_from_date and salary_to_date  ) absent
+-- ...................................................................
+,(select count(sp1.id)  
+from hr_leave sp1, hr_as_basic_info cvc 
+where sp1.leave_ass_id =cvc.associate_id 
+and sp1.leave_from between salary_from_date and salary_to_date 
+and sp1.leave_ass_id=a.associate_id  
+and sp1.leave_type <> 'Maternity') leaves
+-- -- ...................................................................
+,(select count(hr.as_id)  
+from holiday_roaster hr
+where lower(hr.remarks) ='holiday' and hr.as_id=a.associate_id and hr.`date`>a.as_doj
+and hr.`date` between salary_from_date and salary_to_date ) holiday_roaster
+-- -- ...................................................................
+,(select count(hyhp.hr_yhp_id) 
+from hr_yearly_holiday_planner hyhp  
+where hyhp.hr_yhp_open_status <>1
+and a.shift_roaster_status = 0
+and hyhp.hr_yhp_dates_of_holidays >a.as_doj 
+and hyhp.hr_yhp_unit=a.as_unit_id 
+and hyhp.hr_yhp_dates_of_holidays between salary_from_date and salary_to_date
+and hyhp.hr_yhp_dates_of_holidays not in (select hr.`date`  
+from holiday_roaster hr
+ where lower(hr.remarks)  in ('holiday','ot','general')
+and  hr.as_id=a.associate_id and hr.`date`>a.as_doj and hr.`date` between salary_from_date and salary_to_date) 
+and hyhp.hr_yhp_dates_of_holidays not in (select bss.in_date  from hr_attendance_mbm bss  where bss.as_id =a.as_id 
+and bss.in_date between salary_from_date and salary_to_date)  
+and hyhp.hr_yhp_dates_of_holidays not in (select sp1.leave_from  
+from hr_leave sp1,hr_as_basic_info cvc 
+where sp1.leave_ass_id =cvc.associate_id
+and sp1.leave_from between salary_from_date and salary_to_date 
+and sp1.leave_ass_id=a.associate_id and sp1.leave_type <> 'Maternity')
+and hyhp.hr_yhp_dates_of_holidays not in (select m.in_date  
+from hr_attendance_ceil m 
+where m.as_id =a.as_id
+and m.in_date between salary_from_date and salary_to_date) ) general_holiday
+-- -----------------------------------------------------------------
+,(select count(hr.as_id)    from holiday_roaster hr where lower(hr.remarks)  in ('ot')
+and  hr.as_id=a.associate_id and hr.`date`>a.as_doj and hr.`date` between salary_from_date and salary_to_date
+and hr.`date` not in (select bss.in_date  from hr_attendance_ceil bss  where bss.as_id =a.as_id 
+and bss.in_date between salary_from_date and salary_to_date)
+ )   emergency_holiday_ot
+-- -----------------------------------------------------------------
+from hr_as_basic_info a ,hr_benefits bn 
+where  a.associate_id=bn.ben_as_id
+and a.as_id=as_id1;
+-- and a.as_id='3125';
+end if;
+
+
+
+
+
+IF unit1 in (3) THEN
+select a.as_id,a.associate_id , a.as_ot ,a.as_doj ,a.shift_roaster_status ,a.as_status,bn.ben_current_salary ,bn.ben_basic ,bn.ben_house_rent 
+,bn.ben_medical ,bn.ben_transport ,bn.ben_food ,a.as_unit_id ,a.as_designation_id ,a.as_location ,a.as_section_id 
+,bn.ben_cash_amount ,bn.ben_bank_amount ,bn.bank_name
+-- ...................................................................
+ ,( select count(bss.as_id)  from hr_attendance_aql bss  where bss.as_id =a.as_id 
+ and bss.in_date between salary_from_date and salary_to_date) present
+ -- ...................................................................
+ ,( select count(bss.as_id)  from hr_attendance_aql bss  where bss.as_id =a.as_id 
+ and bss.in_date between salary_from_date and salary_to_date and bss.late_status=1) late
+  -- ...................................................................
+ ,IFNULL( ( select sum(bss.ot_hour)  from hr_attendance_aql bss  where bss.as_id =a.as_id 
+ and bss.in_date between ot_from_date and ot_to_date ),0) ot_hour 
+-- ...................................................................
+,( select count(ha.associate_id)  from hr_absent ha where ha.associate_id=a.associate_id 
+and ha.`date` between salary_from_date and salary_to_date  ) absent
+-- ...................................................................
+,(select count(sp1.id)  
+from hr_leave sp1, hr_as_basic_info cvc 
+where sp1.leave_ass_id =cvc.associate_id 
+and sp1.leave_from between salary_from_date and salary_to_date 
+and sp1.leave_ass_id=a.associate_id  
+and sp1.leave_type <> 'Maternity') leaves
+-- -- ...................................................................
+,(select count(hr.as_id)  
+from holiday_roaster hr
+where lower(hr.remarks) ='holiday' and hr.as_id=a.associate_id and hr.`date`>a.as_doj
+and hr.`date` between salary_from_date and salary_to_date ) holiday_roaster
+-- -- ...................................................................
+,(select count(hyhp.hr_yhp_id) 
+from hr_yearly_holiday_planner hyhp  
+where hyhp.hr_yhp_open_status <>1
+and a.shift_roaster_status = 0
+and hyhp.hr_yhp_dates_of_holidays >a.as_doj 
+and hyhp.hr_yhp_unit=a.as_unit_id 
+and hyhp.hr_yhp_dates_of_holidays between salary_from_date and salary_to_date
+and hyhp.hr_yhp_dates_of_holidays not in (select hr.`date`  
+from holiday_roaster hr
+ where lower(hr.remarks)  in ('holiday','ot','general')
+and  hr.as_id=a.associate_id and hr.`date`>a.as_doj and hr.`date` between salary_from_date and salary_to_date) 
+and hyhp.hr_yhp_dates_of_holidays not in (select bss.in_date  from hr_attendance_mbm bss  where bss.as_id =a.as_id 
+and bss.in_date between salary_from_date and salary_to_date)  
+and hyhp.hr_yhp_dates_of_holidays not in (select sp1.leave_from  
+from hr_leave sp1,hr_as_basic_info cvc 
+where sp1.leave_ass_id =cvc.associate_id
+and sp1.leave_from between salary_from_date and salary_to_date 
+and sp1.leave_ass_id=a.associate_id and sp1.leave_type <> 'Maternity')
+and hyhp.hr_yhp_dates_of_holidays not in (select m.in_date  
+from hr_attendance_aql m 
+where m.as_id =a.as_id
+and m.in_date between salary_from_date and salary_to_date) ) general_holiday
+-- -----------------------------------------------------------------
+,(select count(hr.as_id)    from holiday_roaster hr where lower(hr.remarks)  in ('ot')
+and  hr.as_id=a.associate_id and hr.`date`>a.as_doj and hr.`date` between salary_from_date and salary_to_date
+and hr.`date` not in (select bss.in_date  from hr_attendance_aql bss  where bss.as_id =a.as_id 
+and bss.in_date between salary_from_date and salary_to_date)
+ )   emergency_holiday_ot
+-- -----------------------------------------------------------------
+from hr_as_basic_info a ,hr_benefits bn 
+where  a.associate_id=bn.ben_as_id
+and a.as_id=as_id1;
+end if;
+ 
+
+
+IF unit1 in (8) THEN
+select a.as_id,a.associate_id , a.as_ot ,a.as_doj ,a.shift_roaster_status ,a.as_status,bn.ben_current_salary ,bn.ben_basic ,bn.ben_house_rent 
+,bn.ben_medical ,bn.ben_transport ,bn.ben_food ,a.as_unit_id ,a.as_designation_id ,a.as_location ,a.as_section_id 
+,bn.ben_cash_amount ,bn.ben_bank_amount ,bn.bank_name
+-- ...................................................................
+ ,( select count(bss.as_id)  from hr_attendance_cew bss  where bss.as_id =a.as_id 
+ and bss.in_date between salary_from_date and salary_to_date) present
+ -- ...................................................................
+ ,( select count(bss.as_id)  from hr_attendance_cew bss  where bss.as_id =a.as_id 
+ and bss.in_date between salary_from_date and salary_to_date and bss.late_status=1) late
+  -- ...................................................................
+ ,IFNULL( ( select sum(bss.ot_hour)  from hr_attendance_cew bss  where bss.as_id =a.as_id 
+ and bss.in_date between ot_from_date and ot_to_date ),0) ot_hour 
+-- ...................................................................
+,( select count(ha.associate_id)  from hr_absent ha where ha.associate_id=a.associate_id 
+and ha.`date` between salary_from_date and salary_to_date  ) absent
+-- ...................................................................
+,(select count(sp1.id)  
+from hr_leave sp1, hr_as_basic_info cvc 
+where sp1.leave_ass_id =cvc.associate_id 
+and sp1.leave_from between salary_from_date and salary_to_date 
+and sp1.leave_ass_id=a.associate_id  
+and sp1.leave_type <> 'Maternity') leaves
+-- -- ...................................................................
+,(select count(hr.as_id)  
+from holiday_roaster hr
+where lower(hr.remarks) ='holiday' and hr.as_id=a.associate_id and hr.`date`>a.as_doj
+and hr.`date` between salary_from_date and salary_to_date ) holiday_roaster
+-- -- ...................................................................
+,(select count(hyhp.hr_yhp_id) 
+from hr_yearly_holiday_planner hyhp  
+where hyhp.hr_yhp_open_status <>1
+and a.shift_roaster_status = 0
+and hyhp.hr_yhp_dates_of_holidays >a.as_doj 
+and hyhp.hr_yhp_unit=a.as_unit_id 
+and hyhp.hr_yhp_dates_of_holidays between salary_from_date and salary_to_date
+and hyhp.hr_yhp_dates_of_holidays not in (select hr.`date`  
+from holiday_roaster hr
+ where lower(hr.remarks)  in ('holiday','ot','general')
+and  hr.as_id=a.associate_id and hr.`date`>a.as_doj and hr.`date` between salary_from_date and salary_to_date) 
+and hyhp.hr_yhp_dates_of_holidays not in (select bss.in_date  from hr_attendance_mbm bss  where bss.as_id =a.as_id 
+and bss.in_date between salary_from_date and salary_to_date)  
+and hyhp.hr_yhp_dates_of_holidays not in (select sp1.leave_from  
+from hr_leave sp1,hr_as_basic_info cvc 
+where sp1.leave_ass_id =cvc.associate_id
+and sp1.leave_from between salary_from_date and salary_to_date 
+and sp1.leave_ass_id=a.associate_id and sp1.leave_type <> 'Maternity')
+and hyhp.hr_yhp_dates_of_holidays not in (select m.in_date  
+from hr_attendance_cew m 
+where m.as_id =a.as_id
+and m.in_date between salary_from_date and salary_to_date) ) general_holiday
+-- -----------------------------------------------------------------
+,(select count(hr.as_id)    from holiday_roaster hr where lower(hr.remarks)  in ('ot')
+and  hr.as_id=a.associate_id and hr.`date`>a.as_doj and hr.`date` between salary_from_date and salary_to_date
+and hr.`date` not in (select bss.in_date  from hr_attendance_cew bss  where bss.as_id =a.as_id 
+and bss.in_date between salary_from_date and salary_to_date)
+ )   emergency_holiday_ot
+-- -----------------------------------------------------------------
+from hr_as_basic_info a ,hr_benefits bn 
+where  a.associate_id=bn.ben_as_id
+and a.as_id=as_id1;
+end if;
+
+
+
+end
