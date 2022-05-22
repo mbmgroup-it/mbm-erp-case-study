@@ -1,0 +1,1 @@
+UPDATE `hr_buyer_att_ceil4` SET `out_time` = DATE_ADD(`out_time`, INTERVAL 1 HOUR) WHERE `in_date` >= '2022-04-03' AND in_date <= '2022-04-30' AND `in_time` < CONCAT(`in_date`,' 11:00:00') AND ot_hour > 0 AND out_time > CONCAT(`in_date`,' 18:10:00')
