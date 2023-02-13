@@ -1,0 +1,16 @@
+SELECT b.associate_id as 'Associate ID', b.as_name as 'Name',
+u.hr_unit_short_name as 'Unit',
+loc.hr_location_name as 'Location',
+d.hr_designation_name as 'Designation',
+dp.hr_department_name as 'Department', 
+COUNT(*) as 'Count' 
+from cuttingedgedb.hr_attendance_mbm as a 
+left join cuttingedgedb.hr_as_basic_info as b on a.as_id = b.as_id 
+left join cuttingedgedb.hr_outside ho on b.associate_id = ho.as_id
+left join cuttingedgedb.hr_location as loc on b.as_location = loc.hr_location_id
+left join cuttingedgedb.hr_unit as u on b.as_unit_id = u.hr_unit_id
+left join cuttingedgedb.hr_department as dp on b.as_department_id = dp.hr_department_id
+left join cuttingedgedb.hr_designation as d on b.as_designation_id = d.hr_designation_id
+where a.in_date >= '2023-01-01' and a.in_date <= '2023-01-31' and (a.in_time IS null or a.in_time = '' or a.remarks = 'DSI' or a.out_time IS NULL or a.out_time = '')
+GROUP BY a.as_id
+HAVING COUNT(*) > 5 
