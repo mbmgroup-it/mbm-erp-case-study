@@ -1,0 +1,8 @@
+SELECT COUNT(1),ROUND((SUM(gross)/30)*15) SAL FROM hr_monthly_salary WHERE `month`='06' AND `year` =2023 AND ot_status =1 AND emp_status IN (1,6)
+
+
+SELECT count(1),ROUND((SUM(gross)/30)*15) SAL FROM hr_monthly_salary WHERE `month`='06' AND `year` =2023 AND ot_status =0 AND emp_status IN (1,6)
+and gross<=35000
+
+
+SELECT COUNT(1),ROUND((SUM(gross)/30)*20) SAL FROM hr_monthly_salary WHERE `month`='06' AND `year` =2023 AND ot_status =1 AND emp_status IN (1,6)
