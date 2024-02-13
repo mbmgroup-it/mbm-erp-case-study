@@ -30,3 +30,40 @@ left join suadmin_erp.hr_line as l on b.as_line_id = l.hr_line_id
 left join suadmin_erp.hr_shift as sft on a.hr_shift_code = sft.hr_shift_code
 where a.in_date >= '2021-05-01' and a.in_date <= '2021-05-31' and sft.hr_shift_unit_id in (1,4,5)
 ```
+
+
+````
+
+
+select b.associate_id as 'Associate ID', b.as_name as 'Name', b.as_oracle_code as 'Oracle ID',
+u.hr_unit_short_name as 'Unit',
+loc.hr_location_name as 'Location',
+d.hr_designation_name as 'Designation',
+dp.hr_department_name as 'Department',
+s.hr_section_name as 'Section',
+sb.hr_subsec_name as 'Subsction', 
+f.hr_floor_name as 'Floor',l.hr_line_name AS 'Line',
+b.as_doj AS 'DOJ', 
+et.hr_emp_type_name AS 'Type',
+CASE when as_ot = 0 THEN 'Non OT' when as_ot = 1 THEN 'OT' END AS 'OT Status',
+CASE when as_status = 1 THEN 'Active' when as_status = 2 THEN 'Resign' when as_status = 5 THEN 'Left' when as_status = 6 THEN 'Maternity' END AS Status,
+a.in_date AS 'Date',
+CASE when remarks = 'DSI' THEN null when remarks != 'DSI' THEN in_time END AS 'In Time',
+a.out_time as 'Out Time', a.ot_hour as 'OT Hour',
+CASE when late_status  = 0 THEN 'No Late' when late_status = 1 THEN 'Late' END AS 'Late Status',
+a.late_start as 'Late Start Time',
+a.shift_start, a.shift_end, a.hr_shift_code 
+from cuttingedgedb.hr_att_temp as a 
+left join cuttingedgedb.hr_as_basic_info as b on a.as_id = b.as_id 
+left join cuttingedgedb.hr_location as loc on b.as_location = loc.hr_location_id
+left join cuttingedgedb.hr_unit as u on b.as_unit_id = u.hr_unit_id
+left join cuttingedgedb.hr_department as dp on b.as_department_id = dp.hr_department_id
+left join cuttingedgedb.hr_designation as d on b.as_designation_id = d.hr_designation_id
+left join cuttingedgedb.hr_section as s on b.as_section_id = s.hr_section_id
+left join cuttingedgedb.hr_emp_type et  on et.emp_type_id  = b.as_emp_type_id 
+left join cuttingedgedb.hr_subsection as sb on b.as_subsection_id = sb.hr_subsec_id
+left join cuttingedgedb.hr_floor as f on b.as_floor_id = f.hr_floor_id
+left join cuttingedgedb.hr_line as l on b.as_line_id = l.hr_line_id
+where a.in_date >= '2023-11-01' and a.in_date <= '2023-11-30' and b.as_unit_id IN (2,8)
+
+```
