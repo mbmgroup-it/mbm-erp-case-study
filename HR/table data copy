@@ -1,3 +1,3 @@
-INSERT INTO hr_att_temp (`id`,`as_id`,`in_date`,`in_time`,`out_time`,`hr_shift_code`,`remarks`,`created_at`,`updated_by`,`created_by`,`updated_at`,`ot_hour`,`late_status`,`line_id`,`in_unit`,`out_unit`,`o_time`,`late_start`,`break_minute`,`shift_start`,`shift_end`,`night_flag`)
-SELECT t.id,t.as_id,t.in_date,t.in_time,t.out_time,t.hr_shift_code,t.remarks,t.created_at,t.updated_by,t.created_by,t.updated_at,t.ot_hour,t.late_status,t.line_id,t.in_unit,t.out_unit,t.o_time,t.late_start,t.break_minute,t.shift_start,t.shift_end, t.night_flag FROM hr_attendance_ceil AS t WHERE
-t.in_date BETWEEN '2024-04-01' AND '2024-04-30';
+INSERT INTO hr_att_temp (`as_id`,`in_date`,`in_time`,`out_time`,`hr_shift_code`,`remarks`,`created_at`,`updated_by`,`created_by`,`updated_at`,`ot_hour`,`late_status`,`line_id`,`in_unit`,`out_unit`,`o_time`,`late_start`,`break_minute`,`shift_start`,`shift_end`,`night_flag`)
+SELECT t.as_id,t.in_date,t.in_time,t.out_time,t.hr_shift_code,t.remarks,t.created_at,t.updated_by,t.created_by,t.updated_at,t.ot_hour,t.late_status,t.line_id,t.in_unit,t.out_unit,t.o_time,t.late_start,t.break_minute,t.shift_start,t.shift_end, t.night_flag FROM hr_attendance_cew AS t WHERE 
+t.in_date BETWEEN '2024-08-01' AND '2024-08-31'
