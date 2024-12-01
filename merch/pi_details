@@ -23,6 +23,7 @@ SELECT
     m.pi_no, 
     m.pi_date, 
     ms.sup_name,
+    CASE when mmi.mcat_id = 1 THEN 'Fabric' when mmi.mcat_id != 1 THEN 'Trims' END AS 'Item Category',
     mmi.item_name,
     d.pi_qty, 
     d.pi_value, 
