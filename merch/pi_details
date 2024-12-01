@@ -1,0 +1,57 @@
+WITH RefPI AS (
+    SELECT DISTINCT ref_pi_id
+    FROM cm_pi_details AS d
+    LEFT JOIN cm_pi_master AS m ON d.pi_id = m.id
+    LEFT JOIN mr_order_bom_costing_booking AS bom ON d.mr_order_bom_costing_booking_id = bom.id
+    LEFT JOIN mr_order_entry AS o ON d.order_id = o.order_id
+    LEFT JOIN mr_style AS stl ON o.mr_style_stl_id = stl.stl_id
+    LEFT JOIN mr_buyer AS byr ON o.mr_buyer_b_id = byr.b_id
+    LEFT JOIN hr_unit AS e ON o.unit_id = e.hr_unit_id
+    WHERE m.pi_no != ''
+      AND d.pi_qty > 0
+      AND ref_pi_id != null
+      AND d.mr_cat_item_id IS NOT NULL
+      -- Filter by ex-factory date range, including NULL values for o.order_delivery_date
+      AND (
+          o.order_delivery_date BETWEEN '2023-07-01' AND '2024-12-31'
+          OR o.order_delivery_date IS NULL
+      )
+)
+
+SELECT 
+    d.pi_id, 
+    m.pi_no, 
+    m.pi_date, 
+    ms.sup_name,
+    mmi.item_name,
+    d.pi_qty, 
+    d.pi_value, 
+    bom.uom, 
+    o.order_code,
+    CASE when o.order_type = 1 THEN 'bulk' when o.order_type = 2 THEN 'sample' when o.order_type = 3 THEN 'combine' when o.order_type = 4 THEN 'chamical' when o.order_type = 5 THEN 'SMS' when o.order_type = 6 THEN 'Sample Courier' when o.order_type = 7 THEN '2nd quality' END AS 'Order Category',
+    d.garments_qty, 
+    stl.stl_no, 
+    byr.b_shortname
+FROM cm_pi_details AS d
+LEFT JOIN cm_pi_master AS m ON d.pi_id = m.id
+LEFT JOIN mr_order_bom_costing_booking AS bom ON d.mr_order_bom_costing_booking_id = bom.id
+LEFT JOIN mr_order_entry AS o ON d.order_id = o.order_id
+LEFT JOIN mr_style AS stl ON o.mr_style_stl_id = stl.stl_id
+LEFT JOIN mr_buyer AS byr ON o.mr_buyer_b_id = byr.b_id
+LEFT JOIN mr_cat_item as mmi ON d.mr_cat_item_id = mmi.id
+LEFT JOIN mr_supplier AS ms ON m.mr_supplier_sup_id = ms.sup_id
+LEFT JOIN hr_unit AS e ON o.unit_id = e.hr_unit_id
+WHERE m.pi_no != ''
+  AND d.pi_qty > 0
+  AND d.order_id != 0
+  AND d.mr_cat_item_id IS NOT NULL
+  -- Optionally filter by ex-factory date range, including NULL values for o.order_delivery_date
+  AND (
+      o.order_delivery_date BETWEEN '2023-07-01' AND '2024-12-31'
+      OR o.order_delivery_date IS NULL
+  )
+  -- Step 2: Temporary removal of the NOT IN condition for debugging
+  -- Remove this line temporarily to check if the issue is due to ref_pi_id filtering
+  AND d.pi_id NOT IN (SELECT ref_pi_id FROM RefPI)
+
+ORDER BY m.pi_no ASC;
