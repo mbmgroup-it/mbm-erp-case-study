@@ -1,0 +1,77 @@
+WITH RefPI AS (
+    SELECT DISTINCT ref_pi_id
+    FROM cm_pi_details AS d
+    LEFT JOIN cm_pi_master AS m ON d.pi_id = m.id
+    LEFT JOIN mr_order_bom_costing_booking AS bom ON d.mr_order_bom_costing_booking_id = bom.id
+    LEFT JOIN mr_order_entry AS o ON d.order_id = o.order_id
+    LEFT JOIN mr_style AS stl ON o.mr_style_stl_id = stl.stl_id
+    LEFT JOIN mr_buyer AS byr ON o.mr_buyer_b_id = byr.b_id
+    LEFT JOIN hr_unit AS e ON o.unit_id = e.hr_unit_id
+    WHERE m.pi_no != ''
+      AND d.pi_qty > 0
+      AND ref_pi_id IS NOT NULL
+      AND d.mr_cat_item_id IS NOT NULL
+      AND (
+          o.order_delivery_date BETWEEN '2024-01-01' AND '2025-12-31'
+          OR o.order_delivery_date IS NULL
+      )
+)
+
+SELECT 
+    d.pi_id, 
+    m.pi_no, 
+    m.pi_date, 
+    ms.sup_name,
+    CASE 
+        WHEN mmi.mcat_id = 1 AND 
+             ROUND(bom.consumption + (CASE WHEN bom.extra_percent > 0 THEN ((bom.consumption * bom.extra_percent) / 100) ELSE 0 END), 2) = (
+                 SELECT MAX(ROUND(inner_bom.consumption + (CASE WHEN inner_bom.extra_percent > 0 THEN ((inner_bom.consumption * inner_bom.extra_percent) / 100) ELSE 0 END), 2))
+                 FROM mr_order_bom_costing_booking AS inner_bom
+                 WHERE inner_bom.mr_material_category_mcat_id = 1 and inner_bom.id = bom.id
+             ) 
+        THEN 'Main Fabric' 
+        WHEN mmi.mcat_id = 1 THEN 'Auxiliary Fabric' 
+        ELSE 'Trims' 
+    END AS 'Item Category',
+    ROUND(bom.consumption + (CASE WHEN bom.extra_percent > 0 THEN ((bom.consumption * bom.extra_percent) / 100) ELSE 0 END), 2) as unit_consumption,
+--     (
+--                  SELECT MAX(inner_bom.consumption + (inner_bom.consumption * inner_bom.extra_percent / 100))
+--                  FROM mr_order_bom_costing_booking AS inner_bom
+--                  WHERE inner_bom.mr_material_category_mcat_id = 1 and inner_bom.id = bom.id
+--              ) as max_con,
+    mmi.item_name,
+    d.pi_qty, 
+    d.pi_value, 
+    bom.uom, 
+    o.order_code,
+    CASE 
+        WHEN o.order_type = 1 THEN 'bulk' 
+        WHEN o.order_type = 2 THEN 'sample' 
+        WHEN o.order_type = 3 THEN 'combine' 
+        WHEN o.order_type = 4 THEN 'chemical' 
+        WHEN o.order_type = 5 THEN 'SMS' 
+        WHEN o.order_type = 6 THEN 'Sample Courier' 
+        WHEN o.order_type = 7 THEN '2nd quality' 
+    END AS 'Order Category',
+    d.garments_qty, 
+    stl.stl_no, 
+    byr.b_shortname
+FROM cm_pi_details AS d
+LEFT JOIN cm_pi_master AS m ON d.pi_id = m.id
+LEFT JOIN mr_order_bom_costing_booking AS bom ON d.mr_order_bom_costing_booking_id = bom.id
+LEFT JOIN mr_order_entry AS o ON d.order_id = o.order_id
+LEFT JOIN mr_style AS stl ON o.mr_style_stl_id = stl.stl_id
+LEFT JOIN mr_buyer AS byr ON o.mr_buyer_b_id = byr.b_id
+LEFT JOIN mr_cat_item AS mmi ON d.mr_cat_item_id = mmi.id
+LEFT JOIN mr_supplier AS ms ON m.mr_supplier_sup_id = ms.sup_id
+LEFT JOIN hr_unit AS e ON o.unit_id = e.hr_unit_id
+WHERE m.pi_no != ''
+  AND d.pi_qty > 0
+  AND d.order_id != 0
+  AND d.mr_cat_item_id IS NOT NULL
+  AND (
+      o.order_delivery_date BETWEEN '2024-01-01' AND '2025-12-31'
+      OR o.order_delivery_date IS NULL
+  )
+  AND d.pi_id NOT IN (SELECT ref_pi_id FROM RefPI)
+ORDER BY m.pi_no ASC;
