@@ -1,0 +1,28 @@
+SELECT DISTINCT ms.stl_no, moe.order_code, mmc.clr_name, mmc.clr_addt_name, fcr.roll_no, si.qty, si.remaining_qty, gi.package FROM mbm_store_inventory.fabric_color_rolls AS fcr
+join mbm_store_inventory.st_inventory si on fcr.roll_no = si.roll
+left join mbm_store_inventory.gate_in gi on fcr.gi_id = gi.id
+left join cuttingedgedb.mr_order_entry moe on fcr.order_id = moe.order_id
+left join cuttingedgedb.mr_style ms on moe.mr_style_stl_id = ms.stl_id
+left join cuttingedgedb.mr_material_color mmc on si.clr_id = mmc.clr_id
+left join cuttingedgedb.mr_article ma on si.art_id = ma.id
+WHERE fcr.unit_id = 2 and si.unit_id = 2 and si.roll IS NOT NULL and si.remaining_qty > 0 and si.roll_stage = 1
+
+/////
+SELECT 
+    ms.stl_no, 
+    moe.order_code, 
+    mmc.clr_name, 
+    mmc.clr_addt_name, 
+    fcr.roll_no, 
+    fcr.inv_yds, 
+    gi.package
+FROM mbm_store_inventory.fabric_color_rolls AS fcr
+LEFT JOIN mbm_store_inventory.st_inventory si ON fcr.roll_no = si.roll
+LEFT JOIN mbm_store_inventory.gate_in gi ON fcr.gi_id = gi.id
+LEFT JOIN cuttingedgedb.mr_order_entry moe ON fcr.gi_order_id = moe.order_id
+LEFT JOIN cuttingedgedb.mr_style ms ON moe.mr_style_stl_id = ms.stl_id
+LEFT JOIN cuttingedgedb.mr_material_color mmc ON fcr.gi_clr_id = mmc.clr_id
+LEFT JOIN cuttingedgedb.mr_article ma ON fcr.art_id = ma.id
+WHERE fcr.unit_id = 2 
+    AND si.roll IS NULL and fcr.inv_yds > 0;
+
