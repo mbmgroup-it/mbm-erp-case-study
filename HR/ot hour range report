@@ -1,0 +1,60 @@
+SELECT 
+    hu.hr_unit_short_name, 
+    hd.hr_department_name, 
+    hs.hr_section_name, 
+    hs2.hr_subsec_name, 
+    hd2.hr_designation_name,
+    CASE 
+        WHEN hms.ot_status = 0 THEN 'Non OT' 
+        WHEN hms.ot_status = 1 THEN 'OT' 
+        ELSE 'Unknown' 
+    END AS `OT Status`,
+    hms.as_id, 
+    hms.ot_hour,
+    
+    CASE 
+        WHEN hms.ot_hour > 104 AND hms.ot_hour < 130 THEN 1 
+        ELSE 0 
+    END AS `104+ to 130`,
+
+    CASE 
+        WHEN hms.ot_hour >= 130 AND hms.ot_hour < 156 THEN 1 
+        ELSE 0 
+    END AS `130+ to 156`,
+
+    CASE 
+        WHEN hms.ot_hour >= 156 AND hms.ot_hour < 182 THEN 1 
+        ELSE 0 
+    END AS `156+ to 182`,
+
+    CASE 
+        WHEN hms.ot_hour >= 182 THEN 1 
+        ELSE 0 
+    END AS `182+`,
+CASE 
+    WHEN hms.ot_hour > 104 AND hms.ot_hour < 130 THEN '104+ to 130'
+    WHEN hms.ot_hour >= 130 AND hms.ot_hour < 156 THEN '130+ to 156'
+    WHEN hms.ot_hour >= 156 AND hms.ot_hour < 182 THEN '156+ to 182'
+    WHEN hms.ot_hour >= 182 THEN '182+'
+    ELSE 'Other'
+END AS ot_range
+
+
+FROM 
+    cuttingedgedb.hr_monthly_salary AS hms
+LEFT JOIN cuttingedgedb.hr_unit AS hu 
+    ON hms.unit_id = hu.hr_unit_id
+LEFT JOIN cuttingedgedb.hr_subsection AS hs2 
+    ON hms.sub_section_id = hs2.hr_subsec_id
+LEFT JOIN cuttingedgedb.hr_section AS hs 
+    ON hs2.hr_subsec_section_id = hs.hr_section_id
+LEFT JOIN cuttingedgedb.hr_department AS hd 
+    ON hs2.hr_subsec_department_id = hd.hr_department_id
+LEFT JOIN cuttingedgedb.hr_designation AS hd2 
+    ON hms.designation_id = hd2.hr_designation_id
+
+WHERE 
+    hms.`month` = '05' 
+    AND hms.`year` = 2025 
+    AND hms.ot_hour > 104 
+    AND hms.emp_status = 1;
