@@ -1,0 +1,31 @@
+SELECT
+    si.order_id,
+    si.clr_id,
+    si.art_id,
+    si.item_id,
+    si.unit_id,
+    GROUP_CONCAT(si.roll ORDER BY si.roll SEPARATOR ',') AS roll_list,
+    SUM(si.remaining_qty) AS total_remaining_qty
+FROM
+    st_inventory si
+WHERE
+    si.remaining_qty > 0
+    AND si.unit_id = 2
+    AND si.roll_stage IN (1, 2)
+    AND si.inspection_type = 'Fabric'
+    AND NOT EXISTS (
+        SELECT 1
+        FROM st_stocks ss
+        WHERE
+            ss.order_id = si.order_id AND
+            ss.clr_id = si.clr_id AND
+            ss.art_id = si.art_id AND
+            ss.item_id = si.item_id AND
+            ss.unit_id = si.unit_id
+    )
+GROUP BY
+    si.order_id,
+    si.clr_id,
+    si.art_id,
+    si.item_id,
+    si.unit_id;
