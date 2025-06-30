@@ -1,0 +1,51 @@
+WITH ranked_increment AS (
+    SELECT 
+        hi.associate_id,
+        hi.effective_date,
+        hi.increment_amount,
+        ROW_NUMBER() OVER (PARTITION BY hi.associate_id ORDER BY hi.effective_date DESC) AS rn
+    FROM cuttingedgedb.hr_increment hi
+),
+latest_increment AS (
+    SELECT 
+        associate_id, 
+        effective_date, 
+        increment_amount
+    FROM ranked_increment
+    WHERE rn = 1
+),
+unique_benefits AS (
+    SELECT ben_as_id, MAX(ben_current_salary) AS ben_current_salary
+    FROM cuttingedgedb.hr_benefits
+    GROUP BY ben_as_id
+)
+
+SELECT  
+    b.associate_id, 
+    b.as_name, 
+    u.hr_unit_short_name AS "Unit",
+    d.hr_designation_name AS "Designation",
+    dp.hr_department_name AS "Department",
+    s.hr_section_name AS "Section",
+    sb.hr_subsec_name AS "Subsection", 
+    b.as_doj AS "DOJ", 
+    et.hr_emp_type_name AS "Type",
+    CASE WHEN as_ot = 0 THEN 'Non OT' WHEN as_ot = 1 THEN 'OT' END AS "OT Status",
+    hb.ben_current_salary,
+    li.increment_amount AS last_increment_amount,
+    li.effective_date AS last_increment_date
+FROM cuttingedgedb.hr_as_basic_info AS b
+LEFT JOIN cuttingedgedb.hr_unit u ON b.as_unit_id = u.hr_unit_id 
+LEFT JOIN unique_benefits hb ON b.associate_id = hb.ben_as_id
+LEFT JOIN cuttingedgedb.hr_department dp ON b.as_department_id = dp.hr_department_id
+LEFT JOIN cuttingedgedb.hr_designation d ON b.as_designation_id = d.hr_designation_id
+LEFT JOIN cuttingedgedb.hr_section s ON b.as_section_id = s.hr_section_id
+LEFT JOIN cuttingedgedb.hr_emp_type et ON et.emp_type_id = b.as_emp_type_id 
+LEFT JOIN cuttingedgedb.hr_subsection sb ON b.as_subsection_id = sb.hr_subsec_id
+LEFT JOIN latest_increment li ON b.associate_id = li.associate_id
+WHERE b.as_status IN (1, 6)
+ORDER BY u.hr_unit_id;
+
+
+
+
