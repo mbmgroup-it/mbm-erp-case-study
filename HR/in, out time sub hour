@@ -1,0 +1,12 @@
+UPDATE cuttingedgedb.hr_attendance_ceil 
+SET 
+    in_time = DATE_SUB(in_time, INTERVAL 6 HOUR),
+    out_time = DATE_SUB(out_time, INTERVAL 6 HOUR),
+    late_start = DATE_SUB(late_start, INTERVAL 6 HOUR),
+    shift_start = DATE_SUB(shift_start, INTERVAL 6 HOUR),
+    shift_end = DATE_SUB(shift_end, INTERVAL 6 HOUR),
+    hr_shift_code = 'C1',
+    updated_at = '2025-07-23 16:55:00'
+WHERE 
+    in_date = '2025-06-20' 
+    AND hr_shift_code = 'TWOMD';
