@@ -12,7 +12,7 @@ WITH RefPI AS (
       AND ref_pi_id IS NOT NULL
       AND d.mr_cat_item_id IS NOT NULL
       AND (
-          o.order_delivery_date BETWEEN '2024-01-01' AND '2025-12-31'
+          o.order_delivery_date BETWEEN '2024-01-01' AND '2026-12-31'
           OR o.order_delivery_date IS NULL
       )
 )
@@ -23,7 +23,7 @@ SELECT
     m.pi_date, 
     ms.sup_name,
     CASE 
-        WHEN mmi.mcat_id = 1 AND 
+        WHEN mmi.mcat_id = 1 AND mmi.ref_item = 'fabric' AND 
              ROUND(bom.consumption + (CASE WHEN bom.extra_percent > 0 THEN ((bom.consumption * bom.extra_percent) / 100) ELSE 0 END), 2) = (
                  SELECT MAX(ROUND(inner_bom.consumption + (CASE WHEN inner_bom.extra_percent > 0 THEN ((inner_bom.consumption * inner_bom.extra_percent) / 100) ELSE 0 END), 2))
                  FROM mr_order_bom_costing_booking AS inner_bom
@@ -70,7 +70,7 @@ WHERE m.pi_no != ''
   AND d.order_id != 0
   AND d.mr_cat_item_id IS NOT NULL
   AND (
-      o.order_delivery_date BETWEEN '2024-01-01' AND '2025-12-31'
+      o.order_delivery_date BETWEEN '2024-01-01' AND '2026-12-31'
       OR o.order_delivery_date IS NULL
   )
   AND d.pi_id NOT IN (SELECT ref_pi_id FROM RefPI)
