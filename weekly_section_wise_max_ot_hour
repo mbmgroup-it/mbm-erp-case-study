@@ -1,0 +1,53 @@
+WITH weekly_ot AS (
+    SELECT
+    	hs.hr_section_name,
+        YEARWEEK(ham.in_date, 1) AS week_no,
+        DATE_SUB(ham.in_date, INTERVAL WEEKDAY(ham.in_date) DAY) AS week_start_date,
+        DATE_ADD(
+            DATE_SUB(ham.in_date, INTERVAL WEEKDAY(ham.in_date) DAY),
+            INTERVAL 6 DAY
+        ) AS week_end_date,
+
+        habi.as_section_id,
+        habi.associate_id,
+
+        SUM(ham.ot_hour) AS total_ot_hour,
+        COUNT(DISTINCT ham.in_date) AS total_ot_days
+    FROM cuttingedgedb.hr_att_modification AS ham
+    LEFT JOIN cuttingedgedb.hr_as_basic_info AS habi 
+        ON ham.as_id = habi.as_id
+    LEFT JOIN cuttingedgedb.hr_section as hs on habi.as_section_id = hs.hr_section_id 
+    WHERE ham.in_date >= '2026-05-01'
+      AND ham.in_date <  '2026-06-01'
+      AND ham.unit_id = 8
+      AND ham.ot_hour > 0
+      AND habi.associate_id IS NOT NULL
+      AND habi.as_section_id IS NOT NULL
+    GROUP BY 
+        YEARWEEK(ham.in_date, 1),
+        habi.as_section_id,
+        habi.associate_id
+),
+ranked AS (
+    SELECT 
+        weekly_ot.*,
+        ROW_NUMBER() OVER (
+            PARTITION BY week_no, as_section_id
+            ORDER BY total_ot_hour DESC, associate_id ASC
+        ) AS rn
+    FROM weekly_ot
+)
+SELECT 
+	hr_section_name,
+    week_no,
+    week_start_date,
+    week_end_date,
+    as_section_id,
+    associate_id,
+    total_ot_hour AS max_weekly_ot_hour,
+    total_ot_days
+FROM ranked
+WHERE rn = 1
+ORDER BY 
+    week_no ASC,
+    as_section_id ASC;
