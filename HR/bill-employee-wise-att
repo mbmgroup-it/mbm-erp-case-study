@@ -2,8 +2,10 @@ SELECT
     habi.associate_id,
     habi.as_name,
     ham.in_date,
-    ham.in_time,
-    ham.out_time,
+    DATE_FORMAT(ham.in_time, 'H:i:s') as 'in_time',
+    DATE_FORMAT(ham.out_time, 'H:i:s') as 'out_time',
+    ham.in_time as 'date_in_time',
+    ham.out_time as 'date_out_time',
     CASE 
         WHEN hb.bill_type = 1 THEN 'Tiffin'
         WHEN hb.bill_type = 2 THEN 'Dinner'
