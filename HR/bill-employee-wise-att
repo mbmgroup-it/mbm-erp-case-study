@@ -1,0 +1,24 @@
+SELECT 
+    habi.associate_id,
+    habi.as_name,
+    ham.in_date,
+    ham.in_time,
+    ham.out_time,
+    CASE 
+        WHEN hb.bill_type = 1 THEN 'Tiffin'
+        WHEN hb.bill_type = 2 THEN 'Dinner'
+        WHEN hb.bill_type = 3 THEN 'Lunch'
+        WHEN hb.bill_type = 4 THEN 'Iftar'
+        WHEN hb.bill_type = 5 THEN 'Night'
+        ELSE 'Unknown'
+    END AS bill_type_name,
+    hb.amount
+FROM cuttingedgedb.hr_bill AS hb
+LEFT JOIN cuttingedgedb.hr_as_basic_info AS habi 
+    ON hb.as_id = habi.as_id
+LEFT JOIN cuttingedgedb.hr_attendance_mbm AS ham 
+    ON hb.as_id = ham.as_id
+   AND hb.bill_date = ham.in_date
+WHERE habi.as_unit_id = 1
+  AND hb.bill_date >= '2026-06-01'
+  AND hb.bill_date <  '2026-07-01';
