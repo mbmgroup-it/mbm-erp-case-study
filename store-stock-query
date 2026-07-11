@@ -108,3 +108,39 @@ and si.remaining_qty > 0
 -- and (si.roll_stage = 1 OR si.roll_stage = 99) 
 and fcr.relaxation_status != 2
 and fcr.roll_type IN (1,2, 3)
+
+
+/// inprocess 
+SELECT DISTINCT 
+w.name as warehouse_name, bn.name as bin_name,mb.b_shortname, ms.stl_no, moe.order_code,
+mci.item_name, mci.ref_item,
+mmc.clr_name, mmc.clr_addt_name, ma.art_name, fcr.roll_no, fcr.sup_roll_no as 'supplier roll no', 
+-- fcr.inv_yds,
+COALESCE(NULLIF(fcr.act_yds, 0), fcr.inv_yds) as qty,
+-- 'In-process' as stage,
+CASE WHEN fcr.is_headcut = false AND fcr.is_liability = false AND fcr.roll_type IN (1, 2, 3) THEN 'inprocess_qty' ELSE 'non_qc_inv' END as 'stage',
+gi.package
+-- ,SUM(CASE WHEN fcr.is_headcut = false AND fcr.is_liability = false AND fcr.roll_type IN (1, 2, 3) THEN COALESCE(NULLIF(fcr.act_yds, 0), fcr.inv_yds) ELSE 0 END) as inprocess_qty
+-- ,SUM(CASE WHEN fcr.is_headcut = true AND fcr.is_liability = false AND fcr.roll_type IN (1, 2, 3) THEN COALESCE(NULLIF(fcr.act_yds, 0), fcr.inv_yds) ELSE 0 END) as non_qc_inv
+-- ,sum(CASE WHEN fcr.act_yds > 0 THEN fcr.act_yds ELSE fcr.inv_yds END)
+-- ,sum(COALESCE(fcr.act_yds,fcr.inv_yds))
+FROM mbm_store_inventory.fabric_color_rolls AS fcr
+LEFT JOIN mbm_store_inventory.st_inventory si ON fcr.roll_no = si.roll
+LEFT JOIN mbm_store_inventory.gate_in gi ON fcr.gi_id = gi.id
+LEFT JOIN cuttingedgedb.mr_order_entry moe ON fcr.gi_order_id = moe.order_id
+left join cuttingedgedb.mr_buyer mb on moe.mr_buyer_b_id = mb.b_id
+LEFT JOIN cuttingedgedb.mr_style ms ON moe.mr_style_stl_id = ms.stl_id
+LEFT JOIN cuttingedgedb.mr_material_color mmc ON fcr.gi_clr_id = mmc.clr_id
+left join cuttingedgedb.mr_cat_item mci on fcr.item_id = mci.id
+LEFT JOIN cuttingedgedb.mr_article AS ma
+    ON fcr.art_id = ma.id
+LEFT JOIN mbm_store_inventory.st_bin AS bn
+    ON bn.id = fcr.bin_id
+LEFT JOIN mbm_store_inventory.st_warehouse AS w
+    ON w.id = COALESCE(
+        NULLIF(fcr.warehouse_id, 0),
+        bn.warehouse_id
+    )
+WHERE fcr.unit_id = 2 
+    AND si.roll IS NULL and gi.packing_status = 2
+and fcr.roll_type IN (1,2,3) and COALESCE(NULLIF(fcr.act_yds, 0), fcr.inv_yds) > 0;
